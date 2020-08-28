@@ -3,16 +3,72 @@
 <head>
     <meta charset="utf-8">
     <title>Money collector</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/solar/bootstrap.min.css" integrity="sha384-NCwXci5f5ZqlDw+m7FwZSAwboa0svoPPylIW3Nf+GBDsyVum+yArYnaFLE9UDzLd" crossorigin="anonymous">
 <body>
-    <div id="app">
-        <p>{{ foo }}</p>
-        <button v-on:click="foo = 'baz'">Change it</button>
+    <div id="app" class="container">
+        <h1>Events</h1>
+        <ul class="nav nav-tabs">
+            <li v-for="(event, i) in events" class="nav-item">
+                <a @click="selectedEvent = i" href="javascript:void(0);" class="nav-link" :class="{active: i === selectedEvent}"><h2>{{event.name}}</h2></a>
+            </li>
+        </ul>
+        <template v-if="events[selectedEvent]">
+            <h2>Members</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Required</th>
+                        <th scope="col">Actual</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(member, i) in events[selectedEvent].members">
+                        <th scope="row">{{i + 1}}</th>
+                        <td>{{members[member].name}}</td>
+                        <td><input type="text" class="form-control" title="Required"></td>
+                        <td><input type="text" class="form-control" title="Actual"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </template>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script lang="js">
         new Vue({
             el: '#app',
             data: {
+                events: [
+                    {
+                        name: "1111",
+                        members: [0,1,3]
+                    },
+                    {
+                        name: "23231231",
+                        members: [0],
+                    }
+                    ,
+                    {
+                        name: "4343",
+                        members: [],
+                    }
+                ],
+                selectedEvent: null,
+                members: [
+                    {
+                        name: 'Sartor',
+                    },
+                    {
+                        name: 'User1',
+                    },
+                    {
+                        name: 'User2',
+                    },
+                    {
+                        name: 'Moskito',
+                    }
+                ],
                 foo: 'bar'
             },
         })
