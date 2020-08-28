@@ -3,6 +3,7 @@ new Vue({
     data: {
         events: [],
         selectedEvent: null,
+        membersFilter: false,
     },
     computed: {
         sEvent() {
@@ -14,12 +15,14 @@ new Vue({
 
             if (event.members.length) {
                 event.actual = event.members.reduce((acc, cur) => {
-                    return acc + (cur.closed ? parseInt(cur.required, 10) : 0)
+                    return acc +  (cur.done ? parseInt(cur.required ? cur.required : 0, 10) : 0);
                 }, 0);
+
+                event.filteredMembers = event.members.filter(member => !this.membersFilter || !member.done);
             }
 
             return event;
-        }
+        },
     },
     methods: {
         onEventSelect(newEventIndex) {
@@ -29,42 +32,99 @@ new Vue({
         onEventNew() {
             const newCount = this.events.push({
                 name: 'New event',
-                required: 0,
+                info: '',
+                required: '',
+                goal: '',
                 members: [],
+                currency: 'UAH',
             });
 
             this.selectedEvent = newCount - 1;
         },
         onEventNameChange(event) {
-            this.events[this.selectedEvent].name = event.target.value;
+            this.$set(this.events[this.selectedEvent], 'name', event.target.value);
+            this.saveAll();
+        },
+        onEventInfoChange(event) {
+            this.$set(this.events[this.selectedEvent], 'info', event.target.value);
             this.saveAll();
         },
         onEventRequiredChange(event) {
-            this.events[this.selectedEvent].required = event.target.value;
+            this.$set(this.events[this.selectedEvent], 'required', event.target.value);
+            this.saveAll();
+        },
+        onEventGoalChange(event) {
+            this.$set(this.events[this.selectedEvent], 'goal', event.target.value);
+            this.saveAll();
+        },
+        onEventCopyMembers(event) {
+            const fromEventIndex = event.target.value;
+
+            this.events[fromEventIndex].members.forEach(member => {
+                this.events[this.selectedEvent].members.push({
+                    name: member.name,
+                    done: false,
+                    required: this.events[this.selectedEvent].required,
+                });
+            });
+
+            event.target.value = '-1';
+
             this.saveAll();
         },
         onEventDelete() {
-            this.events.splice(this.selectedEvent, 1);
+            if (confirm("Sure?")) {
+                this.events.splice(this.selectedEvent, 1);
+                this.saveAll();
+            }
+            if (this.selectedEvent > this.events.length - 1) {
+                this.onEventSelect(this.events.length - 1);
+            }
+        },
+        onMembersFilterChange() {
+            this.membersFilter = ! this.membersFilter;
+        },
+        onMemberAdd() {
+            const event = this.events[this.selectedEvent];
+            const name = prompt("Member name");
+
+            if (name === null) {
+                return;
+            }
+
+            event.members.push({
+                name,
+                required: event.required,
+            });
             this.saveAll();
         },
         onMemberRequiredChange(memberIndex, event) {
             const member = this.getMember(memberIndex);
-            member.required = event.target.value;
+            this.$set(member, 'required', event.target.value);
             this.saveAll();
         },
         onMemberCommentChange(memberIndex, event) {
             const member = this.getMember(memberIndex);
-            member.comment = event.target.value;
+            this.$set(member, 'comment', event.target.value);
             this.saveAll();
         },
-        onMemberClosed(memberIndex) {
+        onMemberDone(memberIndex) {
             const member = this.getMember(memberIndex);
-            member.closed = ! member.closed;
+            this.$set(member, 'done', ! member.done);
             this.saveAll();
         },
-        onMemberIgnore(memberIndex) {
+        onMemberRename(memberIndex) {
             const member = this.getMember(memberIndex);
-            member.ignore = ! member.ignore;
+            const name = prompt("Member name", member.name);
+            if (name === null) {
+                return;
+            }
+
+            this.$set(member, 'name', name);
+            this.saveAll();
+        },
+        onMemberDelete(memberIndex) {
+            this.events[this.selectedEvent].members.splice(memberIndex, 1);
             this.saveAll();
         },
         getMember(memberIndex) {

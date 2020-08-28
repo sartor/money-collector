@@ -12,6 +12,13 @@
         .nav-tabs .nav-link.active {
             border-bottom-color: transparent;
         }
+
+        @media screen and (min-width: 960px) {
+            .event-info .input-group .input-group-prepend .input-group-text {
+                width: 150px;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -28,56 +35,99 @@
             </li>
         </ul>
         <div v-if="sEvent">
-            <h2 class="mt-3">Event: {{sEvent.name}}</h2>
-            <div class="form-row">
-                <div class="col-auto">
+            <h2 class="mt-3">Event: {{sEvent.name}} <button type="button" class="btn btn-warning btn-sm" @click="onEventDelete">Delete</button></h2>
+            <div class="row event-info">
+                <div class="col-lg-8">
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <div class="input-group-text">Name</div>
                         </div>
                         <input type="text" class="form-control" :value="sEvent.name" @input="onEventNameChange">
                     </div>
-                </div>
-                <div class="col-auto">
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <div class="input-group-text">Default required</div>
+                            <div class="input-group-text">Info</div>
                         </div>
-                        <input type="text" class="form-control" :value="sEvent.required" @input="onEventRequiredChange">
+                        <textarea class="form-control" :value="sEvent.info" @input="onEventInfoChange"></textarea>
                     </div>
                 </div>
-                <div class="col-auto">
+                <div class="col-lg-4">
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Per member</div>
+                        </div>
+                        <input type="number" class="form-control" :value="sEvent.required" @input="onEventRequiredChange">
+                        <div class="input-group-append">
+                            <div class="input-group-text">{{sEvent.currency}}</div>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Goal</div>
+                        </div>
+                        <input type="number" class="form-control" :value="sEvent.goal" @input="onEventGoalChange">
+                        <div class="input-group-append">
+                            <div class="input-group-text">{{sEvent.currency}}</div>
+                        </div>
+                    </div>
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <div class="input-group-text">Actual</div>
                         </div>
-                        <input type="text" class="form-control" readonly :value="sEvent.actual">
+                        <div class="form-control" >{{sEvent.actual}}</div>
+                        <div class="input-group-append">
+                            <div class="input-group-text">{{sEvent.currency}}</div>
+                        </div>
                     </div>
                 </div>
-                <div class="col-auto">
-                    <button type="button" class="btn btn-danger" @click="onEventDelete">Delete</button>
+            </div>
+            <div class="row mt-5">
+                <div class="col-lg-6">
+                    <h2>
+                        Members
+                        <button type="button" class="btn btn-primary btn-sm" @click="onMemberAdd">Add</button>
+                    </h2>
+                </div>
+                <div class="col-lg-4 mt-2">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Copy from</div>
+                        </div>
+                        <select class="custom-select w-auto custom-select-sm" @input="onEventCopyMembers">
+                            <option value="-1" selected=""></option>
+                            <option v-for="(event, i) in events" :value="i">{{event.name}}</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="col-lg-2 mt-2">
+                    <div class="input-group input-group-sm">
+                        <div class="input-group-prepend">
+                            <div class="input-group-text">Show: </div>
+                        </div>
+                        <button type="button" class="btn btn-sm" @click="onMembersFilterChange" :class="membersFilter ? 'btn-info': 'btn-secondary'">{{membersFilter ? 'Waiting': 'All'}}</button>
+                    </div>
                 </div>
             </div>
-            <h2 class="mt-3">Members</h2>
+
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th scope="col">#</th>
+                        <th scope="col" style="width: 30px;"></th>
                         <th scope="col">Name</th>
-                        <th scope="col" style="width: 150px;">Required</th>
+                        <th scope="col" style="width: 150px;">Amount</th>
                         <th scope="col">Status</th>
                         <th scope="col">Comment</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(member, i) in sEvent.members">
+                    <tr v-for="(member, i) in sEvent.filteredMembers">
                         <th scope="row">{{i + 1}}</th>
-                        <td>{{member.name}}</td>
-                        <td><input type="text" class="form-control" title="Required" :value="member.required" @input="onMemberRequiredChange(i, $event)"></td>
-                        <td>
-                            <button type="button" class="btn" :class="member.closed ? 'btn-success' : 'btn-secondary'" @click="onMemberClosed(i)">Closed</button>
-                            <button type="button" class="btn" :class="member.ignore ? 'btn-success' : 'btn-secondary'" @click="onMemberIgnore(i)">Ignore</button>
-                        </td>
+                        <td><button type="button" class="btn btn-warning btn-sm" @click="onMemberDelete(i)">X</button></td>
+                        <td><span @click="onMemberRename(i)" style="text-decoration: underline; cursor: pointer;">{{member.name}}</span></td>
+                        <td><input type="number" class="form-control" title="Required" :value="member.required" @input="onMemberRequiredChange(i, $event)"></td>
+                        <td><button type="button" class="btn" :class="member.done ? 'btn-success' : 'btn-link'" @click="onMemberDone(i)">{{member.done ? 'Payed' : 'Waiting...'}}</button></td>
                         <td><input type="text" class="form-control" title="Comment" :value="member.comment" @input="onMemberCommentChange(i, $event)"></td>
                     </tr>
                 </tbody>
