@@ -1,0 +1,18 @@
+{
+  "name": "money-collector",
+  "version": "1.0.0",
+  "description": "Приложение для учёта сбора денег в офисе",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sartor/money-collector.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sartor/money-collector/issues"
+  },
+  "homepage": "https://github.com/sartor/money-collector#readme",
+  "dependencies": {
+    "@vue/cli": "^4.5.4"
+  }
+}
