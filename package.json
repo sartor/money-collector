@@ -5,5 +5,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sartor/money-collector.git"
+  },
+  "scripts": {
+    "build": "vue build"
+  },
+  "dependencies": {
+    "@vue/cli": "^4.5.4"
   }
 }
