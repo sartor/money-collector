@@ -76,6 +76,10 @@ new Vue({
     },
     created() {
         this.events = JSON.parse(localStorage.getItem('events'));
+
+        if (!this.events) {
+            this.events = [];
+        }
         this.selectedEvent = parseInt(localStorage.getItem('selectedEvent'), 10);
     }
 });
